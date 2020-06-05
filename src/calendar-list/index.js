@@ -51,7 +51,11 @@ class CalendarList extends Component {
     /** Whether to use static header that will not scroll with the list (horizontal only) */
     staticHeader: PropTypes.bool,
     /** A custom key extractor for the generated calendar months */
-    keyExtractor: PropTypes.func
+    keyExtractor: PropTypes.func,
+    /** Style passed to the customWeekStyle */
+    customWeekStyle: PropTypes.oneOfType([PropTypes.object, PropTypes.number, PropTypes.array]),
+    /** A custom props for customize header */
+    headerComponent: PropTypes.func
   }
 
   static defaultProps = {
@@ -64,7 +68,8 @@ class CalendarList extends Component {
     scrollEnabled: true,
     scrollsToTop: false,
     removeClippedSubviews: Platform.OS === 'android' ? false : true,
-    keyExtractor: (item, index) => String(index)
+    keyExtractor: (item, index) => String(index),
+    headerComponent: () => {}
   }
 
   constructor(props) {
@@ -210,12 +215,15 @@ class CalendarList extends Component {
   renderCalendar({item}) {
     return (
       <CalendarListItem
+        testID={`${this.props.testID}_${item}`}
         scrollToMonth={this.scrollToMonth.bind(this)}
         item={item} 
         calendarHeight={this.props.calendarHeight} 
         calendarWidth={this.props.horizontal ? this.props.calendarWidth : undefined} 
         {...this.props} 
         style={this.props.calendarStyle}
+        headerComponent={this.props.headerComponent}
+        customWeekStyle={this.props.customWeekStyle}
       />
     );
   }
@@ -295,6 +303,7 @@ class CalendarList extends Component {
     return (
       <View>
         <FlatList
+          testID={this.props.testID}
           onLayout={this.onLayout}
           ref={(c) => this.listView = c}
           //scrollEventThrottle={1000}

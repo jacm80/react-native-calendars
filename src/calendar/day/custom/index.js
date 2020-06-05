@@ -1,10 +1,22 @@
 import React, {Component} from 'react';
-import {TouchableOpacity, Text} from 'react-native';
+import {View, TouchableOpacity, Text} from 'react-native';
 import PropTypes from 'prop-types';
 
 import styleConstructor from './style';
 import {shouldUpdate} from '../../../component-updater';
 
+const styleVisualAccesibility = {borderColor: '#1B0088', borderWidth: 1, position: 'absolute', top: -2};
+
+const VisualAccessibility = ({state, children}) => {
+  if (state === 'today') {
+    return (
+      <View style={styleVisualAccesibility}>
+        {children}
+      </View>
+    );
+  }
+  return children;
+};
 
 class Day extends Component {
   static displayName = 'IGNORE';
@@ -27,6 +39,7 @@ class Day extends Component {
 
     this.onDayPress = this.onDayPress.bind(this);
     this.onDayLongPress = this.onDayLongPress.bind(this);
+    this.renderCustomIcon = this.renderCustomIcon.bind(this);
   }
 
   onDayPress() {
@@ -40,11 +53,17 @@ class Day extends Component {
     return shouldUpdate(this.props, nextProps, ['state', 'children', 'marking', 'onPress', 'onLongPress']);
   }
 
+  renderCustomIcon(){
+    if (!this.props.marking.withCustomIcon) return null;
+    return this.props.marking.iconComponent; 
+  }
+
   render() {
     let containerStyle = [this.style.base];
     let textStyle = [this.style.text];
     
     let marking = this.props.marking || {};
+
     if (marking && marking.constructor === Array && marking.length) {
       marking = {
         marking: true
@@ -58,6 +77,7 @@ class Day extends Component {
       textStyle.push(this.style.selectedText);
     } else if (isDisabled) {
       textStyle.push(this.style.disabledText);
+      containerStyle.push(this.style.disabledContainer);
     } else if (this.props.state === 'today') {
       containerStyle.push(this.style.today);
       textStyle.push(this.style.todayText);
@@ -77,18 +97,21 @@ class Day extends Component {
     }
 
     return (
-      <TouchableOpacity
-        testID={this.props.testID}
-        style={containerStyle}
-        onPress={this.onDayPress}
-        onLongPress={this.onDayLongPress}
-        activeOpacity={marking.activeOpacity}
-        disabled={marking.disableTouchEvent}
-        accessibilityRole={isDisabled ? undefined : 'button'}
-        accessibilityLabel={this.props.accessibilityLabel}
-      >
-        <Text allowFontScaling={false} style={textStyle}>{String(this.props.children)}</Text>
-      </TouchableOpacity>
+      <VisualAccessibility state={this.props.state}>
+        <TouchableOpacity
+          testID={this.props.testID}
+          style={[containerStyle]}
+          onPress={this.onDayPress}
+          onLongPress={this.onDayLongPress}
+          activeOpacity={marking.activeOpacity}
+          disabled={marking.disableTouchEvent}
+          accessibilityRole={isDisabled ? undefined : 'button'}
+          accessibilityLabel={this.props.accessibilityLabel}
+        >
+          {this.renderCustomIcon()}
+          <Text allowFontScaling={false} style={textStyle}>{String(this.props.children)}</Text>
+        </TouchableOpacity>
+      </VisualAccessibility>
     );
   }
 }
